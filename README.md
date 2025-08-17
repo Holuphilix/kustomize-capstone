@@ -122,6 +122,8 @@ kustomize-capstone/
 
 **Outcome:**
 
+**Screenshot:** Create Project Directories and Files
+![Create Project Directory](./images/1.mkdir_project_structure.png)
 * Project directory fully structured for Kustomize deployment across `dev`, `staging`, and `prod` environments.
 * Overlay directories now include both `kustomization.yaml` and `patch.yaml` for environment-specific customizations.
 * Supporting files for documentation and visuals are ready.
@@ -192,8 +194,333 @@ Replace `<your-repo-url>` with the URL of your Git repository.
 
 ### **Outcome:**
 
+**Screenshot:** Initialize Git Repository
+![Initialize Git Repository](./images/2.git_initiate.png)
+
 * Git is initialized and tracking all project files locally.
 * `.gitignore` ensures unnecessary or temporary files are not committed.
 * Initial commit preserves the project structure and starter files.
 * The project is ready for future changes, CI/CD integration, and eventual push to a remote repository.
 
+## Task 3: Define Base Configuration
+
+**Objective:**
+Create the core Kubernetes resources for your web application in the `base/` directory. These resources serve as the foundation for all environment-specific overlays.
+
+### Steps
+
+#### 1. Create the Deployment resource (`base/deployment.yaml`)
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+        - name: webapp
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+```
+
+#### 2. Create the Service resource (`base/service.yaml`)
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  selector:
+    app: webapp
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+```
+
+#### 3. Create the Base `kustomization.yaml` (`base/kustomization.yaml`)
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deployment.yaml
+  - service.yaml
+```
+
+### Outcome
+
+* `base/` contains the core Kubernetes resources for your web application.
+* `deployment.yaml` defines the application pods and replicas.
+* `service.yaml` exposes the application internally in the cluster.
+* `kustomization.yaml` manages these resources and prepares them for environment-specific overlays.
+
+## Task 4: Create Environment-Specific Overlays
+
+**Objective:**
+Customize the base configuration for each environment (`dev`, `staging`, `prod`) by using overlays and patch files. This allows environment-specific variations like replica counts, resource limits, or environment variables.
+
+### Steps
+
+#### 1. Development Overlay (`overlays/dev/`)
+
+**`kustomization.yaml`**
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - patch.yaml
+```
+
+**`patch.yaml`**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: webapp
+          env:
+            - name: ENVIRONMENT
+              value: "development"
+```
+
+#### 2. Staging Overlay (`overlays/staging/`)
+
+**`kustomization.yaml`**
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - patch.yaml
+```
+
+**`patch.yaml`**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+        - name: webapp
+          env:
+            - name: ENVIRONMENT
+              value: "staging"
+```
+
+#### 3. Production Overlay (`overlays/prod/`)
+
+**`kustomization.yaml`**
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - patch.yaml
+```
+
+**`patch.yaml`**
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: webapp
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+```
+
+### Outcome
+
+* Each overlay (`dev`, `staging`, `prod`) customizes the base deployment according to environment-specific needs.
+* Replicas and environment variables are set per environment.
+* Overlays are ready for integration with CI/CD pipelines in the next tasks.
+
+## **Task 5: Integrate with a CI/CD Pipeline**
+
+**Objective:**
+Set up a CI/CD pipeline using **GitHub Actions** to automatically deploy the web application to a Kubernetes cluster on **Amazon EKS**. The pipeline will leverage Kustomize overlays for development, staging, and production environments. Authentication will be handled using AWS credentials and a base64-encoded kubeconfig secret (`KUBECONFIG_DATA`).
+
+### **Steps:**
+
+1. **Create an EKS Cluster with `eksctl`**
+
+   ```bash
+   eksctl create cluster \
+     --name my-kustomize-cluster \
+     --region us-east-1 \
+     --nodegroup-name standard-workers \
+     --node-type t3.medium \
+     --nodes 2
+   ```
+
+   * `--name`: Name of the EKS cluster
+   * `--region`: AWS region where the cluster is created
+   * `--nodegroup-name`: Worker node group identifier
+   * `--node-type`: EC2 instance type for worker nodes
+   * `--nodes`: Number of worker nodes to provision
+
+2. **Configure `kubectl` to Connect to the Cluster**
+
+   ```bash
+   aws eks update-kubeconfig \
+     --name my-kustomize-cluster \
+     --region us-east-1
+   ```
+
+   Verify connectivity:
+
+   ```bash
+   kubectl get nodes
+   ```
+
+3. **Prepare kubeconfig for GitHub Actions**
+
+   Encode your kubeconfig in base64:
+
+   ```bash
+   cat ~/.kube/config | base64 -w 0
+   ```
+
+   Copy the output (it will be stored as `KUBECONFIG_DATA` in GitHub Secrets).
+
+4. **Prepare AWS Credentials for GitHub Actions**
+
+   Create an IAM user with programmatic access and assign policies:
+
+   * `AmazonEKSClusterPolicy`
+   * `AmazonEKSWorkerNodePolicy`
+   * `AmazonEC2FullAccess`
+   * `AmazonEKS_CNI_Policy`
+
+   In your GitHub repo → **Settings → Secrets and Variables → Actions → New repository secret**, add:
+
+   * `AWS_ACCESS_KEY_ID`
+   * `AWS_SECRET_ACCESS_KEY`
+   * `AWS_REGION` → `us-east-1`
+
+5. **Push Project to GitHub**
+
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit - project structure and base manifests"
+   git remote add origin https://github.com/Holuphilix/kustomize-capstone.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+6. **Add kubeconfig as a Secret in GitHub**
+
+   * Go to **Settings → Secrets and variables → Actions**
+   * Click **New repository secret**
+   * Name it: `KUBECONFIG_DATA`
+   * Paste the base64 output from step 3
+
+7. **Create GitHub Actions Workflow**
+
+   ```bash
+   mkdir -p .github/workflows
+   touch .github/workflows/deploy.yml
+   ```
+
+   `deploy.yml` (updated to use `KUBECONFIG_DATA`):
+
+   ```yaml
+   name: Deploy WebApp
+
+   on:
+     push:
+       branches:
+         - main
+
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+
+       steps:
+         - name: Checkout repository
+           uses: actions/checkout@v3
+
+         - name: Configure AWS credentials
+           uses: aws-actions/configure-aws-credentials@v4
+           with:
+             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+             aws-region: ${{ secrets.AWS_REGION }}
+
+         - name: Set up kubectl
+           uses: azure/setup-kubectl@v3
+           with:
+             version: latest
+
+         - name: Set up Kustomize
+           uses: imranismail/setup-kustomize@v1
+           with:
+             kustomize-version: 5.7.1
+
+         - name: Configure kubeconfig from secret
+           env:
+             KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
+           run: |
+             mkdir -p $HOME/.kube
+             echo "$KUBECONFIG_DATA" | base64 --decode > $HOME/.kube/config
+
+         - name: Verify cluster connection
+           run: kubectl get nodes
+
+         - name: Deploy to Development Environment
+           run: kubectl apply -k overlays/dev
+
+         - name: Deploy to Staging Environment
+           if: github.ref == 'refs/heads/main'
+           run: kubectl apply -k overlays/staging
+
+         - name: Deploy to Production Environment
+           if: github.ref == 'refs/heads/main'
+           run: kubectl apply -k overlays/production
+   ```
+
+### **Outcome:**
+
+* An EKS cluster is provisioned and accessible via `kubectl`.
+* AWS credentials and kubeconfig are securely stored as GitHub Secrets.
+* GitHub Actions deploys the app to **dev, staging, and prod** environments using Kustomize overlays.
+* The pipeline triggers on every push to the `main` branch.
