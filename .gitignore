@@ -1,0 +1,17 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kustomize build artifacts
+*.yaml.bak
+*.tmp
+
+# Kubernetes temporary files
+*.kube*
+
+# IDE and editor folders
+.vscode/
+.idea/
+
+# Node dependencies (if any)
+node_modules/
