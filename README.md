@@ -472,57 +472,61 @@ Set up a CI/CD pipeline using **GitHub Actions** to automatically deploy the web
     on:
     push:
         branches:
-        - dev
-        - staging
         - main
 
     jobs:
     deploy:
         runs-on: ubuntu-latest
 
-        steps:
-        - name: Checkout repository
-            uses: actions/checkout@v3
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-        - name: Configure AWS credentials
-            uses: aws-actions/configure-aws-credentials@v4
-            with:
-            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            aws-region: ${{ secrets.AWS_REGION }}
+      # Step 2: Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-        - name: Set up kubectl
-            uses: azure/setup-kubectl@v3
-            with:
-            version: latest
+      # Step 3: Set up kubectl
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: latest
 
-        - name: Set up Kustomize
-            uses: imranismail/setup-kustomize@v1
-            with:
-            kustomize-version: 5.7.1
+      # Step 4: Set up Kustomize
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: 5.7.1
 
-        - name: Configure kubeconfig from secret
-            env:
-            KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
-            run: |
-            mkdir -p $HOME/.kube
-            echo "$KUBECONFIG_DATA" | base64 --decode > $HOME/.kube/config
+      # Step 5: Configure kubeconfig from GitHub Secret
+      - name: Configure kubeconfig
+        env:
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
+        run: |
+          mkdir -p $HOME/.kube
+          echo "$KUBECONFIG_DATA" | base64 --decode > $HOME/.kube/config
 
-        - name: Verify cluster connection
-            run: kubectl get nodes
+      # Step 6: Verify cluster connection
+      - name: Verify cluster connection
+        run: kubectl get nodes
 
-        - name: Deploy to Development
-            if: github.ref == 'refs/heads/dev'
-            run: kubectl apply -k overlays/dev
+      # Step 7: Deploy to Development overlay
+      - name: Deploy to Development Environment
+        run: kubectl apply -k overlays/dev
 
-        - name: Deploy to Staging
-            if: github.ref == 'refs/heads/staging'
-            run: kubectl apply -k overlays/staging
+      # Step 8: Deploy to Staging overlay
+      - name: Deploy to Staging Environment
+        run: kubectl apply -k overlays/staging
 
-        - name: Deploy to Production
-            if: github.ref == 'refs/heads/main'
-            run: kubectl apply -k overlays/prod
-    ```
+      # Step 9: Deploy to Production overlay
+      - name: Deploy to Production Environment
+        run: kubectl apply -k overlays/prod
+     ```
 
 ### **Outcome:**
 
@@ -552,7 +556,7 @@ Save the file.
 
 ```bash
 git add overlays/dev/patch.yaml
-git commit -m "Test change: update replicas in dev overlay"
+git commit -m "Test change: update replicas 2 in dev overlay"
 ```
 
 3. **Push Changes to GitHub**
