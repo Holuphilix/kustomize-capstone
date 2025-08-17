@@ -411,6 +411,9 @@ Set up a CI/CD pipeline using **GitHub Actions** to automatically deploy the web
    kubectl get nodes
    ```
 
+**Screenshot:**    kubectl get nodes
+![   kubectl get nodes](./images/3.kubectl_get_nodes.png)
+
 3. **Prepare kubeconfig for GitHub Actions**
 
    Encode your kubeconfig in base64:
@@ -527,3 +530,69 @@ Set up a CI/CD pipeline using **GitHub Actions** to automatically deploy the web
 * AWS credentials and kubeconfig are securely stored as GitHub Secrets.
 * GitHub Actions deploys the app to **dev, staging, and prod** environments using Kustomize overlays.
 * The pipeline triggers on every push to the `main` branch.
+
+## **Task 6: Test the CI/CD Pipeline**
+
+**Objective:**
+Verify that your GitHub Actions workflow correctly deploys the application to different Kubernetes environments using Kustomize overlays.
+
+### **Steps:**
+
+1. **Make a Change in Kustomize Configuration**
+   Open one of your overlay directories (for example `overlays/dev/patch.yaml`) and introduce a small change for testing, such as updating the number of replicas:
+
+```yaml
+spec:
+  replicas: 2
+```
+
+Save the file.
+
+2. **Stage and Commit the Changes**
+
+```bash
+git add overlays/dev/patch.yaml
+git commit -m "Test change: update replicas in dev overlay"
+```
+
+3. **Push Changes to GitHub**
+   Since you are using a **single-branch workflow**, push everything to `main`:
+
+```bash
+git push origin main
+```
+
+4. **Monitor GitHub Actions Workflow**
+
+   * Go to your repository on GitHub → **Actions** tab.
+   * Locate the workflow run triggered by your push.
+   * Verify that:
+
+     1. The workflow triggered successfully.
+     2. AWS credentials and `KUBECONFIG_DATA` were used to authenticate.
+     3. The correct overlay (`overlays/dev`, `overlays/staging`, `overlays/prod`) was applied sequentially.
+
+5. **Verify Deployment on EKS Cluster**
+
+```bash
+kubectl get nodes
+kubectl get deployments -n default
+kubectl describe deployment <your-deployment-name>
+```
+
+Check that your change (e.g., updated replicas) has been applied.
+
+6. **Optional Verification for Staging and Production**
+
+   * Make similar test changes in `overlays/staging/patch.yaml` or `overlays/prod/patch.yaml`.
+   * Push to `main`. The workflow will automatically apply the corresponding overlays.
+
+### **Outcome:**
+
+**Screenshot Example:** GitHub Actions Test Run
+![CI/CD Test Run](./images/6.github_actions_test.png)
+
+* The workflow successfully applies Kustomize overlays to all environments.
+* Changes pushed to `main` are automatically deployed to dev, staging, and production overlays.
+* CI/CD pipeline is verified and fully functional.
+
