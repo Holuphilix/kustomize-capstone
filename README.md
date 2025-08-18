@@ -538,7 +538,7 @@ Set up a CI/CD pipeline using **GitHub Actions** to automatically deploy the web
 ## **Task 6: Test the CI/CD Pipeline**
 
 **Objective:**
-Verify that your GitHub Actions workflow correctly deploys the application to different Kubernetes environments using Kustomize overlays.
+Verify that your GitHub Actions workflow correctly deploys the application to **all three Kubernetes environments** using Kustomize overlays.
 
 ### **Steps:**
 
@@ -556,11 +556,11 @@ Save the file.
 
 ```bash
 git add overlays/dev/patch.yaml
-git commit -m "Test change: update replicas 2 in dev overlay"
+git commit -m "Test change: update replicas to 2 in dev overlay"
 ```
 
 3. **Push Changes to GitHub**
-   Since you are using a **single-branch workflow**, push everything to `main`:
+   Since your workflow runs on a **single branch (`main`)**, push all changes there:
 
 ```bash
 git push origin main
@@ -574,15 +574,27 @@ git push origin main
 
      1. The workflow triggered successfully.
      2. AWS credentials and `KUBECONFIG_DATA` were used to authenticate.
-     3. The correct overlay (`overlays/dev`, `overlays/staging`, `overlays/prod`) was applied sequentially.
+     3. All three overlays (`overlays/dev`, `overlays/staging`, `overlays/prod`) were applied sequentially.
+
+**Screenshot Example:** GitHub Actions Test Run
+![CI/CD Test Run](./images/5.workflow.png)
 
 5. **Verify Deployment on EKS Cluster**
 
 ```bash
 kubectl get nodes
 kubectl get deployments -n default
-kubectl describe deployment <your-deployment-name>
 ```
+
+**Screenshot:** kubectl get nodes & deployment
+![kubectl get nodes & deployment](./images/6.kubectl_nodes_deployment.png)
+
+```bash
+kubectl describe deployment webapp-deployment
+```
+
+**Screenshot:** kubectl describe deployment webapp-deployment
+![kubectl get nodes & deployment](./images/kubectl_describe_deployment.png)
 
 Check that your change (e.g., updated replicas) has been applied.
 
@@ -594,9 +606,193 @@ Check that your change (e.g., updated replicas) has been applied.
 ### **Outcome:**
 
 **Screenshot Example:** GitHub Actions Test Run
-![CI/CD Test Run](./images/6.github_actions_test.png)
+![CI/CD Test Run](./images/4.deploy_webapp.png)
 
-* The workflow successfully applies Kustomize overlays to all environments.
-* Changes pushed to `main` are automatically deployed to dev, staging, and production overlays.
+* The workflow successfully applies Kustomize overlays to **development, staging, and production**.
+* Changes pushed to `main` are automatically deployed across all environments.
 * CI/CD pipeline is verified and fully functional.
 
+## **Task 7: Manage Secrets and ConfigMaps**
+
+**Objective:**
+Use Kustomize to generate **ConfigMaps** and **Secrets**. Ensure sensitive data is handled securely and applied correctly for each environment.
+
+### **Steps:**
+
+1. **Create ConfigMap for Environment-Specific Variables**
+   Create a file `configmap.yaml` in `overlays/dev/`:
+
+   ```yaml
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: webapp-config
+   data:
+     LOG_LEVEL: "DEBUG"
+     FEATURE_FLAG: "true"
+   ```
+
+2. **Create Secret for Sensitive Data**
+   Create a file `secret.yaml` in `overlays/dev/`:
+
+   ```yaml
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: webapp-secret
+   type: Opaque
+   stringData:
+     DB_PASSWORD: "devPassword123"
+     API_KEY: "devApiKey456"
+   ```
+
+   > **Note:** `stringData` allows plain text input; Kubernetes will encode it automatically.
+
+3. **Reference ConfigMap and Secret in Deployment**
+   Update `overlays/dev/kustomization.yaml` to include these resources:
+
+   ```yaml
+   apiVersion: kustomize.config.k8s.io/v1beta1
+   kind: Kustomization
+
+   resources:
+     - ../../base
+     - configmap.yaml
+     - secret.yaml
+
+   patches:
+     - path: patch.yaml
+       target:
+         kind: Deployment
+         name: webapp-deployment
+   ```
+
+   Update the container spec in **base/deployment.yaml** to consume them:
+
+   ```yaml
+   envFrom:
+     - configMapRef:
+         name: webapp-config
+     - secretRef:
+         name: webapp-secret
+   ```
+
+4. **Repeat for Staging and Production**
+
+   * Create `configmap.yaml` and `secret.yaml` in `overlays/staging/` and `overlays/prod/` with different values.
+
+   **staging/configmap.yaml**
+
+   ```yaml
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: webapp-config
+   data:
+     LOG_LEVEL: "INFO"
+     FEATURE_FLAG: "false"
+   ```
+
+   **staging/secret.yaml**
+
+   ```yaml
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: webapp-secret
+   type: Opaque
+   stringData:
+     DB_PASSWORD: "stagingPassword456"
+     API_KEY: "stagingApiKey789"
+   ```
+
+   **staging/kustomization.yaml**
+
+   ```yaml
+   apiVersion: kustomize.config.k8s.io/v1beta1
+   kind: Kustomization
+
+   resources:
+     - ../../base
+     - configmap.yaml
+     - secret.yaml
+
+   patches:
+     - path: patch.yaml
+       target:
+         kind: Deployment
+         name: webapp-deployment
+   ```
+
+   **prod/configmap.yaml**
+
+   ```yaml
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: webapp-config
+   data:
+     LOG_LEVEL: "ERROR"
+     FEATURE_FLAG: "false"
+   ```
+
+   **prod/secret.yaml**
+
+   ```yaml
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: webapp-secret
+   type: Opaque
+   stringData:
+     DB_PASSWORD: "prodPassword789"
+     API_KEY: "prodApiKey101"
+   ```
+
+   **prod/kustomization.yaml**
+
+   ```yaml
+   apiVersion: kustomize.config.k8s.io/v1beta1
+   kind: Kustomization
+
+   resources:
+     - ../../base
+     - configmap.yaml
+     - secret.yaml
+
+   patches:
+     - path: patch.yaml
+       target:
+         kind: Deployment
+         name: webapp-deployment
+   ```
+
+5. **Apply Changes Locally**
+   To verify configuration per environment:
+
+   ```bash
+   kubectl apply -k overlays/dev
+   kubectl apply -k overlays/staging
+   kubectl apply -k overlays/prod
+   ```
+
+**Screenshot:** Verify configuration per Environment
+![verify configuration per environment](./images/8.kubectl_apply_dev_staging_prod.png)
+
+6. **Test CI/CD Integration**
+
+   * Push changes to your repository.
+   * Verify GitHub Actions automatically deploys the updated ConfigMaps and Secrets.
+   * Check resources in the cluster:
+
+   ```bash
+   kubectl describe deployment webapp-deployment
+   kubectl get configmap
+   kubectl get secret
+   ```
+
+### **Outcome:**
+
+* Each environment has its own **ConfigMap** and **Secret** managed via Kustomize.
+* Sensitive information is stored securely and applied **only** to the intended environment.
+* CI/CD workflow automatically deploys these updates across **dev, staging, and production**.
