@@ -11,3 +11,19 @@ patches:
     target:
       kind: Deployment
       name: webapp-deployment
+
+configMapGenerator:
+  - name: staging-config
+    literals:
+      - LOG_LEVEL=INFO
+      - FEATURE_FLAG=false
+
+secretGenerator:
+  - name: staging-secret
+    literals:
+      - DB_PASSWORD=stagingPassword456
+      - API_KEY=stagingApiKey789
+
+generatorOptions:
+  disableNameSuffixHash: true
+

@@ -1,0 +1,12 @@
+apiVersion: builtin
+kind: LabelTransformer
+metadata:
+  name: labels-transformer
+labels:
+  app: webapp
+  owner: Holuphilix
+fieldSpecs:
+  - path: metadata/labels
+    kind: Deployment
+  - path: metadata/labels
+    kind: Service

@@ -11,3 +11,18 @@ patches:
     target:
       kind: Deployment
       name: webapp-deployment
+
+configMapGenerator:
+  - name: prod-config
+    literals:
+      - LOG_LEVEL=ERROR
+      - FEATURE_FLAG=false
+
+secretGenerator:
+  - name: prod-secret
+    literals:
+      - DB_PASSWORD=prodPassword789
+      - API_KEY=prodApiKey101
+
+generatorOptions:
+  disableNameSuffixHash: true

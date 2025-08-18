@@ -1,14 +1,15 @@
 # **Implementing a Multi-Environment Application Deployment with Kustomize**
 
-## Project Overview
+## **Project Overview**
 
-This project focuses on deploying a web application across multiple environments—development, staging, and production—using Kustomize. The project emphasizes efficient configuration management, environment-specific customization, and integration with a CI/CD pipeline, demonstrating practical skills in Kubernetes deployment practices.
+This project focuses on deploying a web application across multiple environments: **development, staging, and production**, using **Kustomize**. It emphasizes efficient configuration management, environment-specific customization, and seamless integration with a **CI/CD pipeline**, showcasing practical expertise in **Kubernetes deployment practices**.
 
-## Why This Project Is Relevant
+
+## **Why This Project Is Relevant**
 
 Managing Kubernetes configurations across multiple environments can quickly become complex and error-prone. This project teaches how to leverage Kustomize to maintain clear, reusable, and environment-specific configurations while ensuring smooth deployment through automated CI/CD pipelines.
 
-## Project Goals and Objectives
+## **Project Goals and Objectives**
 
 * Learn how to structure and manage Kubernetes resources using Kustomize.
 * Implement environment-specific overlays for development, staging, and production.
@@ -16,21 +17,21 @@ Managing Kubernetes configurations across multiple environments can quickly beco
 * Handle sensitive data securely using ConfigMaps and Secrets.
 * Demonstrate advanced Kustomize features like transformers and generators.
 
-## Prerequisites
+## **Prerequisites**
 
 * Basic knowledge of Kubernetes concepts (Deployments, Services, ConfigMaps, Secrets).
 * Familiarity with Git version control.
 * Understanding of CI/CD pipelines (GitHub Actions, Jenkins, or similar).
 * Basic command-line and YAML configuration skills.
 
-## Project Deliverables
+## **Project Deliverables**
 
 * A structured Kustomize project repository with base and overlay configurations.
 * A CI/CD pipeline integrated with Kustomize deployments.
 * Properly documented `README.md` explaining project setup and deployment steps.
 * Use of ConfigMaps and Secrets for secure configuration management.
 
-## Tools & Technologies Used
+## **Tools & Technologies Used**
 
 * Kubernetes
 * Kustomize
@@ -38,7 +39,7 @@ Managing Kubernetes configurations across multiple environments can quickly beco
 * CI/CD platform (GitHub Actions or Jenkins)
 * YAML configuration files
 
-## Project Components
+## **Project Components**
 
 * **Base Directory:** Contains the core Kubernetes resources for the web application.
 * **Overlays Directory:** Contains environment-specific configurations (`dev`, `staging`, `prod`).
@@ -48,7 +49,7 @@ Managing Kubernetes configurations across multiple environments can quickly beco
 
 Perfect! We can update **Task 1** to include the `patch.yaml` files in each overlay environment. Here’s the revised version:
 
-### **Task 1: Set Up Your Project Directory and Structure (Complete)**
+### **Task 1 : Set Up Your Project Directory and Structure (Complete)**
 
 **Objective:** Create the foundational project structure with all necessary directories and starter files for a Kustomize-based multi-environment deployment project, including overlay patches.
 
@@ -128,7 +129,7 @@ kustomize-capstone/
 * Overlay directories now include both `kustomization.yaml` and `patch.yaml` for environment-specific customizations.
 * Supporting files for documentation and visuals are ready.
 
-## **Task 2: Initialize Git Repository**
+## **Task 2 : Initialize Git Repository**
 
 **Objective:** Set up version control for your project to track changes, maintain history, and prepare for future integration with a remote repository and CI/CD pipelines.
 
@@ -185,12 +186,10 @@ This records your current project state in Git locally.
    Since your project is fresh, you can skip this for now. When ready, add the remote and push:
 
 ```bash
-git remote add origin <your-repo-url>
+git remote add origin https://github.com/Holuphilix/kustomize-capstone.git
 git branch -M main
 git push -u origin main
 ```
-
-Replace `<your-repo-url>` with the URL of your Git repository.
 
 ### **Outcome:**
 
@@ -202,7 +201,7 @@ Replace `<your-repo-url>` with the URL of your Git repository.
 * Initial commit preserves the project structure and starter files.
 * The project is ready for future changes, CI/CD integration, and eventual push to a remote repository.
 
-## Task 3: Define Base Configuration
+## **Task 3 : Define Base Configuration**
 
 **Objective:**
 Create the core Kubernetes resources for your web application in the `base/` directory. These resources serve as the foundation for all environment-specific overlays.
@@ -267,7 +266,7 @@ resources:
 * `service.yaml` exposes the application internally in the cluster.
 * `kustomization.yaml` manages these resources and prepares them for environment-specific overlays.
 
-## Task 4: Create Environment-Specific Overlays
+## **Task 4 : Create Environment-Specific Overlays**
 
 **Objective:**
 Customize the base configuration for each environment (`dev`, `staging`, `prod`) by using overlays and patch files. This allows environment-specific variations like replica counts, resource limits, or environment variables.
@@ -373,7 +372,7 @@ spec:
 * Replicas and environment variables are set per environment.
 * Overlays are ready for integration with CI/CD pipelines in the next tasks.
 
-## **Task 5: Integrate with a CI/CD Pipeline**
+## **Task 5 : Integrate with a CI/CD Pipeline**
 
 **Objective:**
 Set up a CI/CD pipeline using **GitHub Actions** to automatically deploy the web application to a Kubernetes cluster on **Amazon EKS**. The pipeline will leverage Kustomize overlays for development, staging, and production environments. Authentication will be handled using AWS credentials and a base64-encoded kubeconfig secret (`KUBECONFIG_DATA`).
@@ -535,7 +534,7 @@ Set up a CI/CD pipeline using **GitHub Actions** to automatically deploy the web
 * GitHub Actions deploys the app to **dev, staging, and prod** environments using Kustomize overlays.
 * The pipeline triggers on every push to the `main` branch.
 
-## **Task 6: Test the CI/CD Pipeline**
+## **Task 6 : Test the CI/CD Pipeline**
 
 **Objective:**
 Verify that your GitHub Actions workflow correctly deploys the application to **all three Kubernetes environments** using Kustomize overlays.
@@ -612,7 +611,7 @@ Check that your change (e.g., updated replicas) has been applied.
 * Changes pushed to `main` are automatically deployed across all environments.
 * CI/CD pipeline is verified and fully functional.
 
-## **Task 7: Manage Secrets and ConfigMaps**
+## **Task 7 : Manage Secrets and ConfigMaps**
 
 **Objective:**
 Use Kustomize to generate **ConfigMaps** and **Secrets**. Ensure sensitive data is handled securely and applied correctly for each environment.
@@ -679,7 +678,7 @@ Use Kustomize to generate **ConfigMaps** and **Secrets**. Ensure sensitive data 
 
 4. **Repeat for Staging and Production**
 
-   * Create `configmap.yaml` and `secret.yaml` in `overlays/staging/` and `overlays/prod/` with different values.
+   * Create `configmap.yaml` and `secret.yaml` in `overlays/staging/` and `overlays/prod/` with environment-specific values.
 
    **staging/configmap.yaml**
 
@@ -776,13 +775,25 @@ Use Kustomize to generate **ConfigMaps** and **Secrets**. Ensure sensitive data 
    kubectl apply -k overlays/prod
    ```
 
-**Screenshot:** Verify configuration per Environment
+**Screenshot:** Verify configuration per environment
 ![verify configuration per environment](./images/8.kubectl_apply_dev_staging_prod.png)
 
-6. **Test CI/CD Integration**
+6. **Push Updates to GitHub**
+   Stage, commit, and push all changes:
 
-   * Push changes to your repository.
+   ```bash
+   git add .
+   git commit -m "Add ConfigMaps and Secrets for dev, staging, and prod environments"
+   git push origin main
+   ```
+
+7. **Test CI/CD Integration**
+
    * Verify GitHub Actions automatically deploys the updated ConfigMaps and Secrets.
+
+   **Screenshot:** GitHub Actions Test Run
+![CI/CD Test Run](./images/9.cicd_test_1.png)
+
    * Check resources in the cluster:
 
    ```bash
@@ -791,8 +802,332 @@ Use Kustomize to generate **ConfigMaps** and **Secrets**. Ensure sensitive data 
    kubectl get secret
    ```
 
+**Screenshot:** Check resources in the cluster
+![Check resources in the cluster](./images/10.kubectl_get_configmap_secret_describe_deplyment.png)
+
 ### **Outcome:**
 
 * Each environment has its own **ConfigMap** and **Secret** managed via Kustomize.
 * Sensitive information is stored securely and applied **only** to the intended environment.
 * CI/CD workflow automatically deploys these updates across **dev, staging, and production**.
+
+## **Task 8: Implement Transformers and Generators**
+
+**Objective:**
+Use advanced Kustomize features such as **transformers** and **generators** to refine your Kubernetes configurations. Apply common labels, annotations, and dynamically generate ConfigMaps or Secrets across multiple environments.
+
+### **Final Updated Project Structure Overview**
+
+```
+kustomize-capstone/
+├── base/
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── kustomization.yaml
+│   ├── labels-transformer.yaml
+├── overlays/
+│   ├── dev/
+│   │   ├── kustomization.yaml
+│   │   ├── patch.yaml
+│   │   ├── configmap.yaml
+│   │   └── secret.yaml
+│   ├── staging/
+│   │   ├── kustomization.yaml
+│   │   ├── patch.yaml
+│   │   ├── configmap.yaml
+│   │   └── secret.yaml
+│   └── prod/
+│       ├── kustomization.yaml
+│       ├── patch.yaml
+│       ├── configmap.yaml
+│       └── secret.yaml
+├── images/
+│   └── (place screenshots and diagrams here)
+├── .github/
+│   └── workflows/
+│       └── deploy.yml
+├── .gitignore
+└── README.md
+```
+
+### **Steps:**
+
+1. **Create a Common Labels Transformer**
+   In `base/labels-transformer.yaml`:
+
+```yaml
+apiVersion: builtin
+kind: LabelTransformer
+metadata:
+  name: labels-transformer
+labels:
+  app: webapp
+  owner: Holuphilix
+fieldSpecs:
+  - path: metadata/labels
+    kind: Deployment
+  - path: metadata/labels
+    kind: Service
+```
+
+2. **Reference the Transformer in Base**
+   In `base/kustomization.yaml`:
+
+```yaml
+resources:
+  - deployment.yaml
+  - service.yaml
+
+transformers:
+  - labels-transformer.yaml
+```
+
+3. **Create Secret and ConfigMap Generators for Dev**
+   In `overlays/dev/kustomization.yaml`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - configmap.yaml
+  - secret.yaml
+patches:
+  - path: patch.yaml
+    target:
+      kind: Deployment
+      name: webapp-deployment
+
+configMapGenerator:
+  - name: dev-config
+    literals:
+      - LOG_LEVEL=DEBUG
+      - FEATURE_FLAG=true
+
+secretGenerator:
+  - name: dev-secret
+    literals:
+      - DB_PASSWORD=devPassword123
+      - API_KEY=devApiKey456
+
+generatorOptions:
+  disableNameSuffixHash: true
+```
+
+4. **Repeat for Staging**
+   In `overlays/staging/kustomization.yaml`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - configmap.yaml
+  - secret.yaml
+
+patches:
+  - path: patch.yaml
+    target:
+      kind: Deployment
+      name: webapp-deployment
+
+configMapGenerator:
+  - name: staging-config
+    literals:
+      - LOG_LEVEL=INFO
+      - FEATURE_FLAG=false
+
+secretGenerator:
+  - name: staging-secret
+    literals:
+      - DB_PASSWORD=stagingPassword456
+      - API_KEY=stagingApiKey789
+
+generatorOptions:
+  disableNameSuffixHash: true
+```
+
+5. **Repeat for Production**
+   In `overlays/prod/kustomization.yaml`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - configmap.yaml
+  - secret.yaml
+
+patches:
+  - path: patch.yaml
+    target:
+      kind: Deployment
+      name: webapp-deployment
+
+configMapGenerator:
+  - name: prod-config
+    literals:
+      - LOG_LEVEL=ERROR
+      - FEATURE_FLAG=false
+
+secretGenerator:
+  - name: prod-secret
+    literals:
+      - DB_PASSWORD=prodPassword789
+      - API_KEY=prodApiKey101
+
+generatorOptions:
+  disableNameSuffixHash: true
+```
+
+6. **Apply Changes to Verify Locally**
+
+```bash
+kubectl apply -k overlays/dev
+kubectl apply -k overlays/staging
+kubectl apply -k overlays/prod
+```
+**Screenshot:** kubectl apply -k overlays
+![kubectl apply -k overlays](./images/11.kubectl_apply_k_dev_staging_prod.png)
+
+7. **Check Resources in the Cluster**
+
+```bash
+kubectl get configmap
+kubectl get secret
+```
+**Screenshot:** kubectl get configmap & secret
+![kubectl get configmap & secret](./images/12.kubectl_configmap_secret.png)
+
+
+```bash
+kubectl describe deployment webapp-deployment
+```
+
+**Screenshot:** kubectl describe deployment webapp-deployment
+![kubectl describe deployment webapp-deployment](./images/13.kubectl_describe_webapp-deployment.png)
+
+### **Outcome:**
+
+* Common labels and annotations are applied automatically across all resources using **LabelTransformer**.
+* Environment-specific **ConfigMaps** and **Secrets** are generated dynamically via **Generators**.
+* CI/CD workflow deploys all overlays with the correct configuration.
+* This demonstrates advanced Kustomize capabilities in a multi-environment deployment.
+
+
+### **Implementation Strategy:**
+
+* Used **Kustomize SecretGenerator** and **ConfigMapGenerator** in `kustomization.yaml` instead of creating `secret.yaml` and `configmap.yaml` files manually.
+* Applied the **DRY principle**: one base config, three overlays (`dev`, `staging`, `prod`) that override only what changes (values).
+* Confirmed that **Secrets** are base64-encoded and securely managed, while **ConfigMaps** store non-sensitive environment variables.
+* Ensured Deployments reference the generated ConfigMaps and Secrets correctly via `envFrom`.
+
+### **Challenges Faced:**
+
+1. **Confusion on whether to create `secret.yaml`:**
+
+   * At first, it wasn’t clear if we needed `secret.yaml`.
+   * Resolved by realizing `secretGenerator` auto-creates them — no manual file required.
+
+2. **Overlay duplication:**
+
+   * Initially thought we had to duplicate all configs for each overlay.
+   * Solved by keeping the **base generic** and overriding only what differs (like image tags, env values).
+
+3. **Verification:**
+
+   * Needed to ensure the generator works properly.
+   * Confirmed with `kubectl get secrets` and `kubectl describe deployment` to verify the environment variables.
+
+### **Resolution:**
+
+* By relying on **Kustomize generators**, we avoided committing raw secrets.
+* Implemented **clear overlay separation** for different environments.
+* Verified configs with `kubectl` to ensure correctness.
+
+### **Key Takeaway:**
+Using Kustomize generators for ConfigMaps and Secrets simplified configuration management across environments and enforced security best practices by preventing raw secrets from being exposed in Git.
+
+## 🧹 **Task 9 : Clean Up**
+
+After completing your project, you may want to remove all deployed resources and the EKS cluster to avoid unnecessary costs.
+
+### **Steps:**
+
+1. **Delete Environment Resources**
+
+```bash
+kubectl delete -k overlays/dev --namespace dev
+kubectl delete -k overlays/staging --namespace staging
+kubectl delete -k overlays/prod --namespace prod
+```
+
+* This removes all Deployments, Services, ConfigMaps, and Secrets from the respective namespaces.
+
+2. **Delete the EKS Cluster**
+
+```bash
+eksctl delete cluster --name my-kustomize-cluster --region us-east-1
+```
+
+* This deletes the entire EKS cluster including all nodes and associated resources.
+
+### **Outcome:**
+
+* All Kubernetes resources in **dev, staging, and production** environments are removed.
+* The EKS cluster is fully deleted, preventing unnecessary cloud costs.
+
+## 🚀 **Push to GitHub Repository**
+
+To finalize and publish this documentation to your GitHub repository, follow these steps:
+
+1. Navigate to your project root directory:
+
+   ```bash
+   cd ~/Documents/DevOps_WorkSpace_Projects/DAREY.IO_PROJECTS/kustomize-capstone
+   ```
+
+2. Stage all modified and new files:
+
+   ```bash
+   git add .
+   ```
+
+3. Commit the changes with a clear and descriptive message:
+
+   ```bash
+   git commit -m "Added final documentation for Kubernetes Kustomize project"
+   ```
+
+4. Push your local commits to the remote GitHub repository:
+
+   ```bash
+   git push origin main
+   ```
+
+Your documentation and project updates will now be reflected on **GitHub**, making them accessible for collaboration, version tracking, and showcasing your DevOps expertise.
+
+## **Conclusion**
+
+This project successfully demonstrated how **Kustomize simplifies Kubernetes configuration management** by separating reusable base manifests from environment-specific overlays.
+
+Key takeaways:
+
+* **No duplication** of manifests across environments.
+* **Secure secrets management** with `secretGenerator`.
+* **Scalability**: Easily extendable for new environments.
+* **Consistency**: All environments rely on the same base configuration.
+
+This approach is production-ready and aligns with best practices for managing Kubernetes workloads in real-world DevOps pipelines.
+
+## 👨‍💻 **Author**
+
+### **Philip Oluwaseyi Oludolamu**
+
+**Email: [oluphilix@gmail.com](mailto:oluphilix@gmail.com)**
+
+**GitHub: [github.com/Holuphilix](https://github.com/Holuphilix)**
+
+**LinkedIn: [linkedin.com/in/philipoludolamu](https://linkedin.com/in/philipoludolamu)**
